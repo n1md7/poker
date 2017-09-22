@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<meta charset="utf-8">
+</head>
+<body>
+<script type="text/javascript">
+
+(function(window, document){
+	/* Class of Cards*/
+		function Deck(){
+			/*returns sorted deck with all cards from 1 to King (four suit)*/
+			var cards = new Array()
+			var genRank = new Array()
+			var list = new Array('one','two','three','four','five','six','seven','eight','nine','ten','jack','queen','king')
+			list.forEach(function(e, i){
+				genRank.push({
+					id: i + 1,
+					name: e
+				})
+			})
+			var map = {
+				ranks : genRank,
+				suits : [
+					{
+						id : 14,
+						name : 'hearts',
+						symbol : '♥'
+					},{
+						id : 15,
+						name : 'clubs',
+						symbol : '♣'  
+					},{
+						id : 16,
+						name : 'diamonds',
+						symbol : '♦'  
+					},{
+						id : 17,
+						name : 'spades',
+						symbol : '♠'  
+					}
+				]
+			}
+			
+			for (rank in map.ranks){
+				for(suit in map.suits){
+					cards.push({
+						rank: {
+							id : map.ranks[rank].id,
+							name : map.ranks[rank].name,
+							},
+						suit: {
+							id : map.suits[suit].id,
+							name : map.suits[suit].name,
+							symbol : map.suits[suit].symbol
+						}
+					})
+				}
+			}
+	    	
+	    	return cards
+		}
+	/*END of Class Cards*/
+
+	/* Sorting function*/
+	var SortBy = {
+		rank: function(a, b) {
+			if (a.rank.id < b.rank.id) return -1
+			if (a.rank.id > b.rank.id) return 1
+		    return 0
+		},
+		suit: function(a, b) {
+			if (a.suit.id < b.suit.id) return -1
+			if (a.suit.id > b.suit.id) return 1
+		    return 0
+		}
+	}
+
+
+	function Is(){
+		return {
+			royalFlush: function(){
+				/* highest ranking straight flush*/
+			},
+			straightFlush: function(cards){
+				/* if straight and flush at the same time*/
+			},
+			fourOfAKind: function(cards){
+				console.log('four of king...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]]
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].rank.id == cards[index + 1].rank.id){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index + 1]) // same here coment is down
+						/*Increment counter*/
+						counter ++
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter == 4){
+						/*Four of a Kind detected*/
+						return {
+							condition : true,
+							cards : _cards_
+						}
+					}
+				}
+				return {
+					condition : false,
+					cards : []
+				}
+			},
+			fullHouse: function(cards){
+				console.log('fullHouse...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].rank.id == cards[index + 1].rank.id){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index])
+						// _cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
+						/*Increment counter*/
+						counter ++
+					}else{
+						if(counter >= 2){
+							/* if 2 or more pair of ranks detected then add it to _group_cards_ array */
+							_group_cards_.push(_cards_)
+						}
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+				}
+				/* check again if last element makes pair*/
+				if(counter >=2){
+					_group_cards_.push(_cards_)
+				}
+				var _sum_chk = false
+				if(_group_cards_.length >= 2){
+					_group_cards_.forEach(function(e){
+						if(e.length >= 3){
+							/* if greather then 3 its four of a kind and
+							 it will be checked by another one before execution of this function*/
+							_sum_chk = true
+						}
+					})
+				}
+				return {
+					condition : _sum_chk,
+					cards : (_sum_chk ? _group_cards_ : [])
+				}
+			},
+			flush: function(cards){
+				console.log('flush...')
+				cards.sort(SortBy.suit)
+				var counter = 1, _cards_ = [cards[0]]
+				/*
+
+					one has value only 1 vhich menas 10 jack queen king and one isnt flush
+					this one should be fixed :((((((()))))))
+
+				*/
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].suit.id == cards[index + 1].suit.id){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index + 1])
+						/*Increment counter*/
+						counter ++
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter >= 5){
+						/* flush detected */
+						return {
+							condition: true,
+							cards: _cards_
+						}
+					}
+				}
+				return {
+					condition: false,
+					cards: []
+				}
+			},
+			straight: function(cards){
+				console.log('straight...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]]
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index + 1].rank.id == parseInt(cards[index].rank.id + 1)){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index + 1])
+						/*Increment counter*/
+						counter ++
+					}else if(cards[index].rank.id == cards[index + 1].rank.id){
+						continue
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter == 5){
+						/*Four of a Kind detected*/
+						return {
+							condition : true,
+							cards : _cards_
+						}
+					}
+				}
+				return {
+					condition : false,
+					cards : []
+				}
+			},
+			threeofAkind: function(cards){
+				console.log('threeofAkind...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]]
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].rank.id == cards[index + 1].rank.id){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index + 1]) // same here coment is down
+						/*Increment counter*/
+						counter ++
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter >= 3){
+						/*Three of a Kind detected*/
+						return {
+							condition : true,
+							cards : _cards_
+						}
+					}
+				}
+				return {
+					condition : false,
+					cards : []
+				}
+			},
+			twoPair: function(cards){
+				console.log('twoPair...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].rank.id == cards[index + 1].rank.id){
+						/*add card into _cards_ Array*/
+						_cards_.push(cards[index])
+						// _cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
+						/*Increment counter*/
+						counter ++
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter >= 2){
+						/* if 2 or more pair of ranks detected then add it to _group_cards_ array */
+						_group_cards_.push(_cards_)
+					}
+				}
+				/* check again if last element makes pair*/
+				if(counter >=2){
+					_group_cards_.push(_cards_)
+				}
+				var _sum_chk = (_group_cards_.length >= 2 ? true : false)
+				return {
+					condition : _sum_chk,
+					cards : (_sum_chk ? _group_cards_ : [])
+				}
+			},
+			pair: function(cards){
+				console.log('pair...')
+				cards.sort(SortBy.rank)
+				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
+				for(var index = 0; len = cards.length, index < len - 1; index ++){
+					if(cards[index].rank.id == cards[index + 1].rank.id){
+						/*add card into _cards_ Array*/
+						// _cards_.push(cards[index])
+						_cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
+						/*Increment counter*/
+						counter ++
+					}else{
+						counter = 1
+						_cards_ = [cards[index + 1]]
+					}
+					if(counter >= 2){
+						/* if 2 or more pair of ranks detected then add it to _group_cards_ array */
+						_group_cards_.push(_cards_)
+					}
+				}
+				/* check again if last element makes pair*/
+				if(counter >=2){
+					_group_cards_.push(_cards_)
+				}
+				var _sum_chk = (_group_cards_.length >= 1 ? true : false)
+				return {
+					condition : _sum_chk,
+					cards : (_sum_chk ? _group_cards_ : [])
+				}
+			},
+			highCard: function(cards){
+				console.log('highCard...')
+				cards.sort(SortBy.rank)
+				var hcrd = cards[cards.length - 1]
+				cards.forEach(function(e){
+					if(e.rank.id == 1){
+						hcrd = e
+					}
+				})
+				return {
+					condition:  true,
+					cards: hcrd
+				}
+			}
+		}
+	}
+
+	 
+	function Game(){
+		/*Here are all cards from 1 to King (all suits) count = 52 from 0 to 51*/
+		this.deck = new Deck()
+		this.player = {
+			cards: [],
+			money: 100
+		}
+		this.computer = {
+			cards: [],
+			money: 100
+		}
+		this.dealer = {
+			cards: []
+		}
+		var debug = true
+		
+		var msg = function(txt){
+			debug ? console.log(txt) : null
+		}
+		var rand = function(min, max) {
+	    	return Math.floor(Math.random() * (max - min + 1) + min);
+		}
+
+		this.pick = function(){
+			/*working perfect*/
+			var remove = rand(0, this.deck.length - 1)
+			var card = this.deck[remove]
+			this.deck.splice(remove, 1)
+			return card 
+		}
+
+		this.init = function(){
+			msg('Generating...')
+			this.generate()
+			console.log('Generation done successfully')
+			console.log('Checking...')
+			this.check()
+		}
+
+		this.generate = function(){
+			this.player.cards = [this.pick(), this.pick()]
+			this.computer.cards = [this.pick(), this.pick()]
+			this.dealer.cards = [this.pick(), this.pick(), this.pick(), this.pick(), this.pick()]
+			msg('everyone has cards')
+			console.log('Player cards')
+			console.log(this.player.cards)
+			console.log('Computer cards')
+			console.log(this.computer.cards)
+			console.log('Dealer cards')
+			console.log(this.dealer.cards)
+		}
+	 
+		/* check player Cards*/
+		this.check = function(){
+			console.log('cheking player cards...')
+			var cards = this.player.cards.concat(this.dealer.cards)
+			
+			cards.sort(SortBy.rank)
+
+			cards.forEach(function(e){
+				console.log(e.rank.name+'{'+e.rank.id+'} '+e.suit.name+'{'+e.suit.id+'} '+ e.suit.symbol)
+			})
+
+			var isFlush = new Is().flush(cards)
+			var isStraight = new Is().straight(cards)
+
+			/*cheking straightFlush*/
+			if(isFlush.condition && isStraight.condition){
+				console.log('_______________________straightFlush')
+				console.log(isStraight.cards)
+				isStraight.cards.forEach(function(e){
+					console.log(e.rank.name + ' ' + e.suit.name)
+				})
+				return
+			}
+
+
+			/* checking 4ofAkind */
+			var is4aKing = new Is().fourOfAKind(cards)
+			if(is4aKing.condition){
+				console.log('_______________________4 of a kind')
+				console.log(is4aKing.condition)
+				console.log(is4aKing.cards)
+				is4aKing.cards.forEach(function(e){
+					console.log(e.rank.name + ' ' + e.suit.name)
+				})
+				return
+			}
+
+			/* cheking full house*/
+			var isFHouse = new Is().fullHouse(cards)
+			if(isFHouse.condition){
+				console.log('_______________________fullHouse')
+				console.log(isFHouse.condition)
+				console.log(isFHouse.cards[0])
+				console.log(isFHouse.cards[1])
+				isFHouse.cards.forEach(function(e){
+					e.forEach(function(_e_){
+						console.log(_e_.rank.name + ' ' + _e_.suit.name)
+					})
+				})
+				return
+			}
+
+			/*cheking flush*/
+			if(isFlush.condition){
+				console.log('_______________________flush')
+				console.log(isFlush.condition)
+				console.log(isFlush.cards)
+				isFlush.cards.forEach(function(e){
+					console.log(e.rank.name + ' ' + e.suit.name)
+				})
+				return
+			}
+
+			/* cheking straight*/
+			if(isStraight.condition){
+				console.log('_______________________straight')
+				console.log(isStraight.condition)
+				console.log(isStraight.cards)
+				isStraight.cards.forEach(function(e){
+					console.log(e.rank.name + ' ' + e.suit.name)
+				})
+				return
+			}
+
+			/* cheking 3 of a kind*/
+			var isthreeofAkind = new Is().threeofAkind(cards)
+			if(isthreeofAkind.condition){
+				console.log('_______________________3 of a kind')
+				console.log(isthreeofAkind.condition)
+				console.log(isthreeofAkind.cards)
+				isthreeofAkind.cards.forEach(function(e){
+					console.log(e.rank.name + ' ' + e.suit.name)
+				})
+				return
+			}
+
+			/* cheking 2 pair*/
+			var istwoPair = new Is().twoPair(cards)
+			if(istwoPair.condition){
+				console.log('_______________________two pair')
+				console.log(istwoPair.condition)
+				console.log(istwoPair.cards)
+				istwoPair.cards.forEach(function(e){
+					e.forEach(function(_e_){
+						console.log(_e_.rank.name + ' ' + _e_.suit.name)
+					})
+				})
+				return
+			}
+
+			/* cheking 2 pair*/
+			var isPair = new Is().pair(cards)
+			if(isPair.condition){
+				console.log('_______________________ pair')
+				console.log(isPair.condition)
+				console.log(isPair.cards)
+				isPair.cards.forEach(function(e){
+					e.forEach(function(_e_){
+						console.log(_e_.rank.name + ' ' + _e_.suit.name)
+					})
+				})
+				return
+			}
+
+			/* hight card*/
+			var highCard = new Is().highCard(cards)
+			if(highCard.condition){
+				console.log('_______________________hight card')
+				console.log(highCard.condition)
+				console.log(highCard.cards)
+				console.log(highCard.cards.rank.name + ' ' + highCard.cards.suit.name)
+				return
+			}
+		}
+	}
+	
+	
+	new Game().init()
+
+})(window, document)
+
+ 
+</script>
+</body>
+</html>
