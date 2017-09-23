@@ -5,9 +5,22 @@
 	<meta charset="utf-8">
 </head>
 <body>
+<h1><code>F12</code></h1>
+<input type="button" id="check" value="check">
+
+
+
+
 <script type="text/javascript">
 
 (function(window, document){
+	var debugMode = true
+	var print = function(text, color='black', fontSize = 10){
+		debugMode?console.log('%c'+text, 'color:'+color+';font-size:'+fontSize+'px;'):null
+	}
+
+/*flush > straights*/
+
 	/* Class of Cards*/
 		function Deck(){
 			/*returns sorted deck with all cards from 1 to King (four suit)*/
@@ -54,7 +67,8 @@
 							id : map.suits[suit].id,
 							name : map.suits[suit].name,
 							symbol : map.suits[suit].symbol
-						}
+						}/*, 
+						hidden: false*/
 					})
 				}
 			}
@@ -82,12 +96,14 @@
 		return {
 			royalFlush: function(){
 				/* highest ranking straight flush*/
+				return
 			},
 			straightFlush: function(cards){
 				/* if straight and flush at the same time*/
+				return
 			},
 			fourOfAKind: function(cards){
-				console.log('four of king...')
+				// print('four of king...')
 				cards.sort(SortBy.rank)
 				var counter = 1, _cards_ = [cards[0]]
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
@@ -113,14 +129,23 @@
 					cards : []
 				}
 			},
-			fullHouse: function(cards){
-				console.log('fullHouse...')
+			fullHouse: function(cards){   
+				// print('fullHouse...')
 				cards.sort(SortBy.rank)
+				/*
+					two{2} spades{17} ♠
+					two{2} clubs{15} ♣
+					two{2} diamonds{16} ♦
+					six{6} spades{17} ♠
+					seven{7} spades{17} ♠
+					eight{8} diamonds{16} ♦
+					eight{8} spades{17} ♠
+				*/
 				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index].rank.id == cards[index + 1].rank.id){
 						/*add card into _cards_ Array*/
-						_cards_.push(cards[index])
+						_cards_.push(cards[index + 1])
 						// _cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
 						/*Increment counter*/
 						counter ++
@@ -140,7 +165,7 @@
 				var _sum_chk = false
 				if(_group_cards_.length >= 2){
 					_group_cards_.forEach(function(e){
-						if(e.length >= 3){
+						if(e.length == 3){
 							/* if greather then 3 its four of a kind and
 							 it will be checked by another one before execution of this function*/
 							_sum_chk = true
@@ -153,15 +178,10 @@
 				}
 			},
 			flush: function(cards){
-				console.log('flush...')
+				// print('flush...')
 				cards.sort(SortBy.suit)
 				var counter = 1, _cards_ = [cards[0]]
-				/*
-
-					one has value only 1 vhich menas 10 jack queen king and one isnt flush
-					this one should be fixed :((((((()))))))
-
-				*/
+				
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index].suit.id == cards[index + 1].suit.id){
 						/*add card into _cards_ Array*/
@@ -186,9 +206,15 @@
 				}
 			},
 			straight: function(cards){
-				console.log('straight...')
+				// print('straight...')
 				cards.sort(SortBy.rank)
 				var counter = 1, _cards_ = [cards[0]]
+				/*
+
+					one has value only 1 vhich menas 10 jack queen king and one isnt flush
+					this one should be fixed :((((((()))))))
+
+				*/
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index + 1].rank.id == parseInt(cards[index].rank.id + 1)){
 						/*add card into _cards_ Array*/
@@ -197,6 +223,10 @@
 						counter ++
 					}else if(cards[index].rank.id == cards[index + 1].rank.id){
 						continue
+					}else if(cards[0].rank.id == 1 && cards[index].rank.id == 13){ 
+						/* one is added after King*/
+						counter  ++
+						_cards_.push(cards[0])
 					}else{
 						counter = 1
 						_cards_ = [cards[index + 1]]
@@ -215,7 +245,7 @@
 				}
 			},
 			threeofAkind: function(cards){
-				console.log('threeofAkind...')
+				// print('threeofAkind...')
 				cards.sort(SortBy.rank)
 				var counter = 1, _cards_ = [cards[0]]
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
@@ -241,15 +271,23 @@
 					cards : []
 				}
 			},
-			twoPair: function(cards){
-				console.log('twoPair...')
+			twoPairs: function(cards){
+				// print('twoPairs...')
+				/*
+					one{1} hearts{14} ♥
+					one{1} diamonds{16} ♦
+					two{2} diamonds{16} ♦
+					six{6} spades{17} ♠
+					six{6} diamonds{16} ♦
+					nine{9} hearts{14} ♥
+					nine{9} spades{17} ♠
+				*/
 				cards.sort(SortBy.rank)
 				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index].rank.id == cards[index + 1].rank.id){
 						/*add card into _cards_ Array*/
-						_cards_.push(cards[index])
-						// _cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
+						_cards_.push(cards[index + 1])
 						/*Increment counter*/
 						counter ++
 					}else{
@@ -259,6 +297,8 @@
 					if(counter >= 2){
 						/* if 2 or more pair of ranks detected then add it to _group_cards_ array */
 						_group_cards_.push(_cards_)
+						counter = 1
+						_cards_ = [cards[index + 1]]
 					}
 				}
 				/* check again if last element makes pair*/
@@ -272,14 +312,13 @@
 				}
 			},
 			pair: function(cards){
-				console.log('pair...')
+				// print('pair...')
 				cards.sort(SortBy.rank)
-				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
+				var counter = 1, _cards_ = [cards[0]]
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index].rank.id == cards[index + 1].rank.id){
 						/*add card into _cards_ Array*/
-						// _cards_.push(cards[index])
-						_cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
+						_cards_.push(cards[index + 1])
 						/*Increment counter*/
 						counter ++
 					}else{
@@ -287,22 +326,20 @@
 						_cards_ = [cards[index + 1]]
 					}
 					if(counter >= 2){
-						/* if 2 or more pair of ranks detected then add it to _group_cards_ array */
-						_group_cards_.push(_cards_)
+						return {
+							condition : true,
+							cards : _cards_
+						}
 					}
 				}
-				/* check again if last element makes pair*/
-				if(counter >=2){
-					_group_cards_.push(_cards_)
-				}
-				var _sum_chk = (_group_cards_.length >= 1 ? true : false)
+				
 				return {
-					condition : _sum_chk,
-					cards : (_sum_chk ? _group_cards_ : [])
+					condition : false,
+					cards : []
 				}
 			},
 			highCard: function(cards){
-				console.log('highCard...')
+				// print('highCard...')
 				cards.sort(SortBy.rank)
 				var hcrd = cards[cards.length - 1]
 				cards.forEach(function(e){
@@ -321,6 +358,8 @@
 	 
 	function Game(){
 		/*Here are all cards from 1 to King (all suits) count = 52 from 0 to 51*/
+		this.distributing = 1
+
 		this.deck = new Deck()
 		this.player = {
 			cards: [],
@@ -333,13 +372,9 @@
 		this.dealer = {
 			cards: []
 		}
-		var debug = true
 		
-		var msg = function(txt){
-			debug ? console.log(txt) : null
-		}
 		var rand = function(min, max) {
-	    	return Math.floor(Math.random() * (max - min + 1) + min);
+	    	return Math.floor(Math.random() * (max - min + 1) + min)
 		}
 
 		this.pick = function(){
@@ -351,149 +386,245 @@
 		}
 
 		this.init = function(){
-			msg('Generating...')
 			this.generate()
-			console.log('Generation done successfully')
-			console.log('Checking...')
-			this.check()
+			this.loop()
+			this.event()
+		}
+
+		this.event = function(){
+			var self = this
+			this.checkBtn = document.getElementById('check')
+			this.checkBtn.addEventListener('click', function(){
+				self.distributing ++
+				self.loop()
+			})
 		}
 
 		this.generate = function(){
-			this.player.cards = [this.pick(), this.pick()]
-			this.computer.cards = [this.pick(), this.pick()]
-			this.dealer.cards = [this.pick(), this.pick(), this.pick(), this.pick(), this.pick()]
-			msg('everyone has cards')
-			console.log('Player cards')
-			console.log(this.player.cards)
-			console.log('Computer cards')
-			console.log(this.computer.cards)
-			console.log('Dealer cards')
-			console.log(this.dealer.cards)
+			var self = this; 
+			([1, 2]).forEach(function(){
+				self.player.cards.push(self.pick())
+			});
+			([1, 2]).forEach(function(){
+				self.computer.cards.push(self.pick())
+			});
+			([1, 2, 3, 4, 5]).forEach(function(){
+				var card = self.pick()
+				card.hidden = true
+				self.dealer.cards.push(card)
+			});
+			// this.player.cards = [this.pick(), this.pick()]
+			// this.computer.cards = [this.pick(), this.pick()]
+			// this.dealer.cards = [this.pick(), this.pick(), this.pick(), this.pick(), this.pick()]
 		}
-	 
-		/* check player Cards*/
-		this.check = function(){
-			console.log('cheking player cards...')
-			var cards = this.player.cards.concat(this.dealer.cards)
-			
+	 	
+		this.checking = function(cards){
 			cards.sort(SortBy.rank)
 
 			cards.forEach(function(e){
-				console.log(e.rank.name+'{'+e.rank.id+'} '+e.suit.name+'{'+e.suit.id+'} '+ e.suit.symbol)
+				print(e.rank.name+'{'+e.rank.id+'} '+e.suit.name+'{'+e.suit.id+'} '+ e.suit.symbol)
 			})
 
 			var isFlush = new Is().flush(cards)
 			var isStraight = new Is().straight(cards)
 
-			/*cheking straightFlush*/
+			/*checking straightFlush*/
 			if(isFlush.condition && isStraight.condition){
-				console.log('_______________________straightFlush')
-				console.log(isStraight.cards)
+				print('straightFlush', 'red', 24)
+				print(isStraight.cards)
 				isStraight.cards.forEach(function(e){
-					console.log(e.rank.name + ' ' + e.suit.name)
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 9,
+					name : 'straight-flush',
+					cards : isStraight.cards
+				}
 			}
 
 
 			/* checking 4ofAkind */
 			var is4aKing = new Is().fourOfAKind(cards)
 			if(is4aKing.condition){
-				console.log('_______________________4 of a kind')
-				console.log(is4aKing.condition)
-				console.log(is4aKing.cards)
+				print('4 of a kind', 'red', 24)
+				print(is4aKing.cards)
 				is4aKing.cards.forEach(function(e){
-					console.log(e.rank.name + ' ' + e.suit.name)
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 8,
+					name : 'four of a kind',
+					cards : is4aKing.cards
+				}
 			}
 
-			/* cheking full house*/
+			/* checking full house*/
 			var isFHouse = new Is().fullHouse(cards)
 			if(isFHouse.condition){
-				console.log('_______________________fullHouse')
-				console.log(isFHouse.condition)
-				console.log(isFHouse.cards[0])
-				console.log(isFHouse.cards[1])
+				print('fullHouse', 'red', 24)
 				isFHouse.cards.forEach(function(e){
 					e.forEach(function(_e_){
-						console.log(_e_.rank.name + ' ' + _e_.suit.name)
+						print(_e_.rank.name + ' ' + _e_.suit.name)
 					})
 				})
-				return
+				return {
+					id: 7,
+					name : 'full house',
+					cards : isFHouse.cards
+				}
 			}
 
-			/*cheking flush*/
+			/*checking flush*/
 			if(isFlush.condition){
-				console.log('_______________________flush')
-				console.log(isFlush.condition)
-				console.log(isFlush.cards)
+				print('flush', 'red', 24)
 				isFlush.cards.forEach(function(e){
-					console.log(e.rank.name + ' ' + e.suit.name)
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 6,
+					name : 'flush',
+					cards : isFlush.cards
+				}
 			}
 
-			/* cheking straight*/
+			/* checking straight*/
 			if(isStraight.condition){
-				console.log('_______________________straight')
-				console.log(isStraight.condition)
-				console.log(isStraight.cards)
+				print('straight', 'red', 24)
 				isStraight.cards.forEach(function(e){
-					console.log(e.rank.name + ' ' + e.suit.name)
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 5,
+					name : 'straight',
+					cards : isStraight.cards
+				}
 			}
 
-			/* cheking 3 of a kind*/
+			/* checking 3 of a kind*/
 			var isthreeofAkind = new Is().threeofAkind(cards)
 			if(isthreeofAkind.condition){
-				console.log('_______________________3 of a kind')
-				console.log(isthreeofAkind.condition)
-				console.log(isthreeofAkind.cards)
+				print('3 of a kind', 'red', 24)
 				isthreeofAkind.cards.forEach(function(e){
-					console.log(e.rank.name + ' ' + e.suit.name)
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 4,
+					name : 'three of a kind',
+					cards : isthreeofAkind.cards
+				}
 			}
 
-			/* cheking 2 pair*/
-			var istwoPair = new Is().twoPair(cards)
-			if(istwoPair.condition){
-				console.log('_______________________two pair')
-				console.log(istwoPair.condition)
-				console.log(istwoPair.cards)
-				istwoPair.cards.forEach(function(e){
+			/* checking 2 pair*/
+			var istwoPairs = new Is().twoPairs(cards)
+			if(istwoPairs.condition){
+				print('two pair', 'red', 24)
+				istwoPairs.cards.forEach(function(e){
 					e.forEach(function(_e_){
-						console.log(_e_.rank.name + ' ' + _e_.suit.name)
+						print(_e_.rank.name + ' ' + _e_.suit.name)
 					})
 				})
-				return
+				return {
+					id: 3,
+					name : 'tow pair',
+					cards : istwoPairs.cards
+				}
 			}
 
-			/* cheking 2 pair*/
+			/* checking pair*/
 			var isPair = new Is().pair(cards)
 			if(isPair.condition){
-				console.log('_______________________ pair')
-				console.log(isPair.condition)
-				console.log(isPair.cards)
+				print(' pair', 'red', 24)
 				isPair.cards.forEach(function(e){
-					e.forEach(function(_e_){
-						console.log(_e_.rank.name + ' ' + _e_.suit.name)
-					})
+					print(e.rank.name + ' ' + e.suit.name)
 				})
-				return
+				return {
+					id: 2,
+					name : 'one pair',
+					cards : isPair.cards
+				}
 			}
 
 			/* hight card*/
 			var highCard = new Is().highCard(cards)
 			if(highCard.condition){
-				console.log('_______________________hight card')
-				console.log(highCard.condition)
-				console.log(highCard.cards)
-				console.log(highCard.cards.rank.name + ' ' + highCard.cards.suit.name)
-				return
+				print('high card', 'red', 24)
+				cards.forEach(function(e){
+					if(e.rank.id == highCard.cards.rank.id)
+						print('^ '+e.rank.name + ' ' + e.suit.name, 'green')
+					else
+						print(e.rank.name + ' ' + e.suit.name)
+				})
+				return {
+					id: 1,
+					name : 'high card',
+					cards : highCard.cards
+				}
 			}
+		}
+
+		/* check player Cards*/
+		this.loop = function(){
+			var cardsPL = new Array(), cardsPC = new Array(), concatPC = [], concatPL = []
+			cardsPL = this.player.cards
+			cardsPC = this.computer.cards
+			if(this.distributing == 2){
+				for(var index = 0; index <= 2; index ++){
+					/*distribute 3 cards*/
+					concatPL.push(this.dealer.cards[index]) 
+					concatPC.push(this.dealer.cards[index]) 
+				}
+			}
+			if(this.distributing == 3){
+				/*distribute 4 cards*/
+				for(var index = 0; index <= 3; index ++){
+					concatPL.push(this.dealer.cards[index]) 
+					concatPC.push(this.dealer.cards[index]) 
+				}
+			}
+			if(this.distributing == 4){
+				/*distribute 5 cards*/
+				for(var index = 0; index <= 4; index ++){
+					concatPL.push(this.dealer.cards[index]) 
+					concatPC.push(this.dealer.cards[index]) 
+				}
+			}
+			cardsPL = cardsPL.concat(concatPL)
+			cardsPC = cardsPC.concat(concatPC)
+			// var cardsPL = this.player.cards.concat(this.dealer.cards)
+			// var cardsPC = this.computer.cards.concat(this.dealer.cards)
+			
+			/*player cards cheking*/
+			print("PLAYER cards",'rgba(255,0,0,0.6)', 20)
+			var PL = this.checking(cardsPL)
+			print('----------------------------------------------------------------','yellow', 24)
+			/*computer cards checking*/
+			print("COMPUTER cards",'rgba(0,255,0,0.6)', 20)
+			var PC = this.checking(cardsPC)
+
+			if(PL.id == PC.id){
+				if(typeof PL.cards.rank === 'object'){ 
+					/*
+						if there is only one object and not an Array
+						its for only high card
+					*/
+					if(PL.cards.rank.id == PC.cards.rank.id){
+						print('DRAWN','blue', 56)
+					}else if(PL.cards.rank.id == 1){
+						print('Player Wins','green', 56)
+					}else if(PL.cards.rank.id > PC.cards.rank.id){
+						print('Player Wins','green', 56)
+					}else{
+						print('Computer Wins','red', 56)
+					}
+				}else{
+					print('DRAWN','blue', 56)
+				}
+			}else if(PL.id < PC.id){
+				print('Computer Wins','red', 56)
+			}else{
+				print('Player Wins','green', 56)
+			}
+			
 		}
 	}
 	
@@ -502,6 +633,9 @@
 
 })(window, document)
 
+
+
+ 
  
 </script>
 </body>
