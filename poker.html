@@ -4,12 +4,116 @@
 	<title></title>
 	<meta charset="utf-8">
 </head>
+<style type="text/css">
+	.cards{
+		width: 79px;
+		height: 123px;
+		position: relative;
+		margin:10px;
+		border: solid 1px;
+		float: left;
+		background-image: url('assets/deck.png');
+		background-repeat: no-repeat;
+		background-position-x: -158px;
+		background-position-y: -492px;
+	}
+	.pc{
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		width: 205px;
+		/*border: solid red;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	.pl{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 205px;
+		/*border: solid blue;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	.dl{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		top: 0;
+		right: 0;
+		width: 506px;
+		/*border: solid yellow;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	#pl1{
+	
+	}
+	.container{
+		position: absolute;
+		top:0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 1000px;
+		height: 500px;
+		/*border: solid rgba(255,255,0,0.4);*/
+		margin:auto;
+
+	}
+	.controlls{
+		position: absolute;
+		width: 170px;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+		/*border: solid;*/
+		height: 70px;
+	}
+	#pcMoney{
+		position: absolute;
+		top: 0;right: 0;
+	}
+	#plMoney{
+		position: absolute;
+		right: 0;bottom: 0;
+	}
+</style>
 <body>
-<h1><code>F12</code></h1>
-<input type="button" id="check" value="check">
+<h1 id="alert"></h1>
+<h3 id="pcMoney"></h3>
+<h3 id="plMoney"></h3>
+<div class="container">
+	<div class="pc">
+		<div class="cards" id="pc1"></div>
+		<div class="cards" id="pc2"></div>
+	</div>
+	<div class="dl">
+		<div class="cards" id="dl1"></div>
+		<div class="cards" id="dl2"></div>
+		<div class="cards" id="dl3"></div>
+		<div class="cards" id="dl4"></div>
+		<div class="cards" id="dl5"></div>
+	</div>
+	<div class="pl">
+		<div class="cards" id="pl1"></div>
+		<div class="cards" id="pl2"></div>
+	</div>
+</div>
+<div class="controlls">
+	<input type="button" id="check" value="Check">
+	<input type="button" id="fold" value="Fold">
+	<input type="button" id="bet" value="Bet 2x">
+</div>
+<script type="text/javascript">
+		// document.getElementById('pl1').style.bac
 
 
 
+</script>
 
 <script type="text/javascript">
 
@@ -27,6 +131,7 @@
 			var cards = new Array()
 			var genRank = new Array()
 			var list = new Array('one','two','three','four','five','six','seven','eight','nine','ten','jack','queen','king')
+			var pixW = 79, pixH = 123
 			list.forEach(function(e, i){
 				genRank.push({
 					id: i + 1,
@@ -38,16 +143,16 @@
 				suits : [
 					{
 						id : 14,
-						name : 'hearts',
-						symbol : '♥'
-					},{
-						id : 15,
 						name : 'clubs',
 						symbol : '♣'  
 					},{
-						id : 16,
+						id : 15,
 						name : 'diamonds',
 						symbol : '♦'  
+					},{
+						id : 16,
+						name : 'hearts',
+						symbol : '♥'
 					},{
 						id : 17,
 						name : 'spades',
@@ -67,8 +172,11 @@
 							id : map.suits[suit].id,
 							name : map.suits[suit].name,
 							symbol : map.suits[suit].symbol
-						}/*, 
-						hidden: false*/
+						},
+						pixel: {
+							x: pixW * rank,
+							y: pixH * suit
+						}
 					})
 				}
 			}
@@ -359,7 +467,8 @@
 	function Game(){
 		/*Here are all cards from 1 to King (all suits) count = 52 from 0 to 51*/
 		this.distributing = 1
-
+		this.playerFold = false
+		this.pcFold = false
 		this.deck = new Deck()
 		this.player = {
 			cards: [],
@@ -385,17 +494,61 @@
 			return card 
 		}
 
+
+		this.drawCard = function(pl, pc, dl){
+			print('dealer')
+			console.log(dl)
+			document.getElementById('pc1').style.backgroundPositionX = '-'+pc[0].pixel.x+'px'
+			document.getElementById('pc1').style.backgroundPositionY = '-'+pc[0].pixel.y+'px'
+			document.getElementById('pc2').style.backgroundPositionX = '-'+pc[1].pixel.x+'px'
+			document.getElementById('pc2').style.backgroundPositionY = '-'+pc[1].pixel.y+'px'
+
+
+		if(dl.length==3){
+
+			document.getElementById('dl1').style.backgroundPositionX = '-'+dl[0].pixel.x+'px'
+			document.getElementById('dl1').style.backgroundPositionY = '-'+dl[0].pixel.y+'px'
+			document.getElementById('dl2').style.backgroundPositionX = '-'+dl[1].pixel.x+'px'
+			document.getElementById('dl2').style.backgroundPositionY = '-'+dl[1].pixel.y+'px'
+			document.getElementById('dl3').style.backgroundPositionX = '-'+dl[2].pixel.x+'px'
+			document.getElementById('dl3').style.backgroundPositionY = '-'+dl[2].pixel.y+'px'
+		}else if(dl.length==4){
+
+			document.getElementById('dl4').style.backgroundPositionX = '-'+dl[3].pixel.x+'px'
+			document.getElementById('dl4').style.backgroundPositionY = '-'+dl[3].pixel.y+'px'
+		}else if(dl.length==5){
+			document.getElementById('dl5').style.backgroundPositionX = '-'+dl[4].pixel.x+'px'
+			document.getElementById('dl5').style.backgroundPositionY = '-'+dl[4].pixel.y+'px'
+		}
+
+			document.getElementById('pl1').style.backgroundPositionX = '-'+pl[0].pixel.x+'px'
+			document.getElementById('pl1').style.backgroundPositionY = '-'+pl[0].pixel.y+'px'
+			document.getElementById('pl2').style.backgroundPositionX = '-'+pl[1].pixel.x+'px'
+			document.getElementById('pl2').style.backgroundPositionY = '-'+pl[1].pixel.y+'px'
+
+		}
+
 		this.init = function(){
 			this.generate()
-			this.loop()
 			this.event()
+			this.loop()
 		}
 
 		this.event = function(){
 			var self = this
 			this.checkBtn = document.getElementById('check')
+			this.alertBox = document.getElementById('alert')
+			this.pcMoneyBox = document.getElementById('pcMoney')
+			this.plMoneyBox = document.getElementById('plMoney')
+			this.foldBtn = document.getElementById('fold')
+			this.betBtn = document.getElementById('bet')
 			this.checkBtn.addEventListener('click', function(){
-				self.distributing ++
+				self.distributing<5?self.distributing++:null
+				self.loop()
+			})
+
+			this.foldBtn.addEventListener('click', function(){
+				self.playerFold = true
 				self.loop()
 			})
 		}
@@ -409,9 +562,7 @@
 				self.computer.cards.push(self.pick())
 			});
 			([1, 2, 3, 4, 5]).forEach(function(){
-				var card = self.pick()
-				card.hidden = true
-				self.dealer.cards.push(card)
+				self.dealer.cards.push(self.pick())
 			});
 			// this.player.cards = [this.pick(), this.pick()]
 			// this.computer.cards = [this.pick(), this.pick()]
@@ -564,15 +715,26 @@
 
 		/* check player Cards*/
 		this.loop = function(){
+			this.pcMoneyBox.innerHTML = this.computer.money
+			this.plMoneyBox.innerHTML = this.player.money
+
+
+
+
 			var cardsPL = new Array(), cardsPC = new Array(), concatPC = [], concatPL = []
 			cardsPL = this.player.cards
 			cardsPC = this.computer.cards
+			// console.log(cardsPC)
+			this.drawCard(cardsPL, cardsPC, concatPL)
+
 			if(this.distributing == 2){
 				for(var index = 0; index <= 2; index ++){
 					/*distribute 3 cards*/
 					concatPL.push(this.dealer.cards[index]) 
 					concatPC.push(this.dealer.cards[index]) 
+
 				}
+				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
 			if(this.distributing == 3){
 				/*distribute 4 cards*/
@@ -580,6 +742,7 @@
 					concatPL.push(this.dealer.cards[index]) 
 					concatPC.push(this.dealer.cards[index]) 
 				}
+				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
 			if(this.distributing == 4){
 				/*distribute 5 cards*/
@@ -587,7 +750,9 @@
 					concatPL.push(this.dealer.cards[index]) 
 					concatPC.push(this.dealer.cards[index]) 
 				}
+				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
+
 			cardsPL = cardsPL.concat(concatPL)
 			cardsPC = cardsPC.concat(concatPC)
 			// var cardsPL = this.player.cards.concat(this.dealer.cards)
@@ -601,6 +766,11 @@
 			print("COMPUTER cards",'rgba(0,255,0,0.6)', 20)
 			var PC = this.checking(cardsPC)
 
+			if(this.playerFold){
+				this.alertBox.innerHTML= "PC wins"
+				this.player.money -= 10
+				return
+			}
 			if(PL.id == PC.id){
 				if(typeof PL.cards.rank === 'object'){ 
 					/*
@@ -630,6 +800,7 @@
 	
 	
 	new Game().init()
+	// new Game().drawCard()
 
 })(window, document)
 
