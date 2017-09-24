@@ -5,6 +5,15 @@
 	<meta charset="utf-8">
 </head>
 <style type="text/css">
+	#dlMoney{
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 0;
+		height: 40px;
+		width: 100px;
+		margin:auto;
+	}
 	body{
 		background-color: #938874;
 	}
@@ -94,6 +103,7 @@
 <h1 id="alert"></h1>
 <h3 id="pcMoney"></h3>
 <h3 id="plMoney"></h3>
+<h3 id="dlMoney"></h3>
 <div class="container">
 	<div class="pc">
 		<div class="cards" id="pc1"></div>
@@ -115,7 +125,7 @@
 	<input type="button" id="check" value="Check">
 	<input type="button" id="fold" value="Fold">
 	<input type="button" id="bet" value="Bet 2x">
-	<input type="range" id="range" min="1" max="100" defaultValue="1">
+	<!-- <input type="range" id="range" min="1" max="100" defaultValue="1"> -->
 </div>
 
 <script type="text/javascript">
@@ -474,11 +484,11 @@
 			deck: new Deck(),
 			player: {
 				cards: new Array(),
-				money: 100
+				money: 100000
 			},
 			computer: {
 				cards: new Array(),
-				money: 100
+				money: 100000
 			},
 			dealer: {
 				cards: new Array(),
@@ -524,7 +534,8 @@
 					alert: new find('#alert').element,
 					money: {
 						player: new find('#plMoney').element,
-						computer: new find('#pcMoney').element
+						computer: new find('#pcMoney').element,
+						dealer: new find('#dlMoney').element
 					}
 				},
 				elements: {
@@ -614,6 +625,7 @@
 				if(self.data.game.finished.condition){
 					self.resetGame()
 					self.data.game.finished.condition = false
+
 					return
 				}
 				self.data.distributing < 5 ? self.data.distributing ++ : null
@@ -754,7 +766,7 @@
 				})
 				return {
 					id: 3,
-					name : 'tow pair',
+					name : 'two pairs',
 					cards : istwoPairs.cards
 				}
 			}
@@ -815,6 +827,11 @@
 			this.data.distributing = 1
 			this.data.deck = new Deck()
 			this.data.htmlComponent.box.alert.innerHTML = null
+			this.data.htmlComponent.button.bet.removeAttribute('disabled')
+			this.data.htmlComponent.button.check.value = 'check'
+			this.data.htmlComponent.button.fold.removeAttribute('disabled')
+			this.data.htmlComponent.button.bet.removeAttribute('disabled')
+
 
 			/* start again*/
 			this.generate()
@@ -830,6 +847,7 @@
 		this.showAlerts = function(){
 			this.data.htmlComponent.box.money.player.innerHTML = this.data.player.money
 			this.data.htmlComponent.box.money.computer.innerHTML = this.data.computer.money
+			this.data.htmlComponent.box.money.dealer.innerHTML = this.data.dealer.money
 		}
 
 		this.makeProfit = function(){
@@ -847,6 +865,11 @@
 		}
 
 		this.dealerGatheringBets = function(){
+			if(this.data.player.money < this.data.bet.money || this.data.computer.money < this.data.bet.money){
+				this.data.htmlComponent.button.bet.setAttribute('disabled','')
+				return
+			}
+			
 			/* Make firs bet, both pc and player */
 			if(!this.data.blind.player){
 				this.data.dealer.money += this.data.bet.money
@@ -861,7 +884,7 @@
 			}
 			/* if someone rised or doubled a bet */
 			if(this.data.bet.player || this.data.bet.computer){
-				this.data.dealer.money += this.data.bet.money
+				this.data.dealer.money += 2 * this.data.bet.money
 				this.data.computer.money -= this.data.bet.money
 				this.data.player.money -= this.data.bet.money
 				this.data.bet.player = false
@@ -912,6 +935,8 @@
 			if(this.data.fold.player){
 				this.data.htmlComponent.box.alert.innerHTML= "PC wins"
 				// this.data.player.money -= 10
+				this.data.game.finished.inFavorOf.computer = true
+				this.data.game.finished.condition = true
 				this.makeProfit()
 				this.showAlerts()
 
@@ -967,6 +992,9 @@
 					this.data.game.finished.inFavorOf.player = true
 					this.alertBoxFunc("Player wins, "+PL.name)
 				}
+				this.data.htmlComponent.button.check.value = 'start'
+				this.data.htmlComponent.button.fold.setAttribute('disabled','')
+				this.data.htmlComponent.button.bet.setAttribute('disabled','')
 			this.makeProfit()
 			this.showAlerts()
 
