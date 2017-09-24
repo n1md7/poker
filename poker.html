@@ -5,20 +5,21 @@
 	<meta charset="utf-8">
 </head>
 <style type="text/css">
-body{
-	background-color: #938874;
-}
+	body{
+		background-color: #938874;
+	}
 	.cards{
 		width: 79px;
 		height: 123px;
 		position: relative;
 		margin:10px;
-		border: solid 1px;
+		/*border: solid 1px;*/
 		float: left;
 		background-image: url('assets/deck.png');
 		background-repeat: no-repeat;
 		background-position-x: -158px;
 		background-position-y: -492px;
+		border-radius: 7px;
 	}
 	.pc{
 		position: absolute;
@@ -114,13 +115,8 @@ body{
 	<input type="button" id="check" value="Check">
 	<input type="button" id="fold" value="Fold">
 	<input type="button" id="bet" value="Bet 2x">
+	<input type="range" id="range" min="1" max="100" defaultValue="1">
 </div>
-<script type="text/javascript">
-		// document.getElementById('pl1').style.bac
-
-
-
-</script>
 
 <script type="text/javascript">
 
@@ -210,7 +206,7 @@ body{
 	function find(el = null){
 		this.element = (typeof el === 'object') ? el : document.querySelector(el)
 		if(this.element === null) return
-		this.style = this.element.getAttribute('style') || ''
+		this.style = /*this.element.getAttribute('style') ||*/ ''
 
 		this.css = function(styles){
 			if(typeof styles === 'object'){
@@ -224,9 +220,6 @@ body{
 			}
 		}
 	}
-	// window.find = function(e){
-	// 	return new find(e)
-	// }
 
 	function Is(){
 		return {
@@ -268,21 +261,12 @@ body{
 			fullHouse: function(cards){   
 				// print('fullHouse...')
 				cards.sort(SortBy.rank)
-				/*
-					two{2} spades{17} ♠
-					two{2} clubs{15} ♣
-					two{2} diamonds{16} ♦
-					six{6} spades{17} ♠
-					seven{7} spades{17} ♠
-					eight{8} diamonds{16} ♦
-					eight{8} spades{17} ♠
-				*/
+				
 				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
 					if(cards[index].rank.id == cards[index + 1].rank.id){
 						/*add card into _cards_ Array*/
 						_cards_.push(cards[index + 1])
-						// _cards_.push(cards[index + 1]) // not tested so far, but if [0] == [1] then it will push two times one element
 						/*Increment counter*/
 						counter ++
 					}else{
@@ -408,16 +392,7 @@ body{
 				}
 			},
 			twoPairs: function(cards){
-				// print('twoPairs...')
-				/*
-					one{1} hearts{14} ♥
-					one{1} diamonds{16} ♦
-					two{2} diamonds{16} ♦
-					six{6} spades{17} ♠
-					six{6} diamonds{16} ♦
-					nine{9} hearts{14} ♥
-					nine{9} spades{17} ♠
-				*/
+				
 				cards.sort(SortBy.rank)
 				var counter = 1, _cards_ = [cards[0]], _group_cards_ = new Array()
 				for(var index = 0; len = cards.length, index < len - 1; index ++){
@@ -491,40 +466,81 @@ body{
 		}
 	}
 
+ 
 	 
 	function Game(){
 		/*Here are all cards from 1 to King (all suits) count = 52 from 0 to 51*/
-		this.distributing = 1
-		this.finished = false
-		this.fold = {
-			player: false,
-			computer: false
+		this.data = {
+			deck: new Deck(),
+			player: {
+				cards: new Array(),
+				money: 100
+			},
+			computer: {
+				cards: new Array(),
+				money: 100
+			},
+			dealer: {
+				cards: new Array(),
+				money: 0
+			},
+			distributing: 1,
+			game: {
+				finished: {
+					condition: false,
+					inFavorOf: {
+						player: false,
+						computer: false,
+						none: false
+					}
+				}
+			},
+			fold: {
+				player: false,
+				computer: false
+			},
+			bet: {
+				player: false,
+				computer: false,
+				money: 10
+			},
+			blind: {
+				player: false,
+				computer: false
+			},
+			rise: {
+				player: false,
+				computer: false,
+				money: 0
+			},
+			htmlComponent: {
+				button: {
+					check: new find('#check').element,
+					fold: new find('#fold').element,
+					bet: new find('#bet').element,
+					range: new find('#range').element
+				},
+				box: {
+					alert: new find('#alert').element,
+					money: {
+						player: new find('#plMoney').element,
+						computer: new find('#pcMoney').element
+					}
+				},
+				elements: {
+					pc1: '#pc1',
+					pc2: '#pc2',
+					pl1: '#pl1',
+					pl2: '#pl2',
+					dl1: '#dl1',
+					dl2: '#dl2',
+					dl3: '#dl3',
+					dl4: '#dl4',
+					dl5: '#dl5'
+				}
+			}
 		}
-
-		this.elements = {
-			pc1: '#pc1',
-			pc2: '#pc2',
-			pl1: '#pl1',
-			pl2: '#pl2',
-			dl1: '#dl1',
-			dl2: '#dl2',
-			dl3: '#dl3',
-			dl4: '#dl4',
-			dl5: '#dl5'
-		}
-
-		this.deck = new Deck()
-		this.player = {
-			cards: [],
-			money: 100
-		}
-		this.computer = {
-			cards: [],
-			money: 100
-		}
-		this.dealer = {
-			cards: []
-		}
+		console.log(this.data)
 		
 		var rand = function(min, max) {
 	    	return Math.floor(Math.random() * (max - min + 1) + min)
@@ -532,8 +548,8 @@ body{
 
 		this.pick = function(){
 			/* returning one card from deck and removing that card from array*/
-			var remove = rand(0, this.deck.length - 1), card = this.deck[remove]
-			this.deck.splice(remove, 1)
+			var remove = rand(0, this.data.deck.length - 1), card = this.data.deck[remove]
+			this.data.deck.splice(remove, 1)
 			return card 
 		}
 
@@ -541,9 +557,10 @@ body{
 		this.drawCard = function(pl, pc, dl){
 			switch(dl.length){
 				case 3:
-					for(var index = 0; _dl = [this.elements.dl1, 
-												this.elements.dl2, 
-												this.elements.dl3], index < _dl.length; index ++){
+					for(var index = 0; _dl = [this.data.htmlComponent.elements.dl1, 
+												this.data.htmlComponent.elements.dl2, 
+												this.data.htmlComponent.elements.dl3],
+												 index < _dl.length; index ++){
 						new find(_dl[index]).css({
 							'background-position-x': dl[index].pixel.x * (-1) + 'px',
 							'background-position-y': dl[index].pixel.y * (-1) + 'px'
@@ -551,13 +568,13 @@ body{
 					}
 					break
 				case 4: 
-					new find(this.elements.dl4).css({
+					new find(this.data.htmlComponent.elements.dl4).css({
 						'background-position-x': dl[3].pixel.x * (-1) + 'px',
 						'background-position-y': dl[3].pixel.y * (-1) + 'px'
 					})
 				break
 				case 5:
-					new find(this.elements.dl5).css({
+					new find(this.data.htmlComponent.elements.dl5).css({
 						'background-position-x': dl[4].pixel.x * (-1) + 'px',
 						'background-position-y': dl[4].pixel.y * (-1) + 'px'
 					})
@@ -565,16 +582,17 @@ body{
 				default:
 					if(debugMode){
 						/* if debug mode show oponents cards else hide it*/
-						new find(this.elements.pc1).css({
+						new find(this.data.htmlComponent.elements.pc1).css({
 							'background-position-x': pc[0].pixel.x * (-1) + 'px',
 							'background-position-y': pc[0].pixel.y * (-1) + 'px'
 						})
-						new find(this.elements.pc2).css({
+						new find(this.data.htmlComponent.elements.pc2).css({
 							'background-position-x': pc[1].pixel.x * (-1) + 'px',
 							'background-position-y': pc[1].pixel.y * (-1) + 'px'
 						})
 					}
-					for(var index = 0; _pl = [this.elements.pl1, this.elements.pl2], index < _pl.length; index ++){
+					for(var index = 0; _pl = [this.data.htmlComponent.elements.pl1, 
+						this.data.htmlComponent.elements.pl2], index < _pl.length; index ++){
 						new find(_pl[index]).css({
 							'background-position-x': pl[index].pixel.x * (-1) + 'px',
 							'background-position-y': pl[index].pixel.y * (-1) + 'px'
@@ -592,42 +610,41 @@ body{
 
 		this.event = function(){
 			var self = this
-			this.checkBtn = new find('#check').element
-			this.alertBox = new find('#alert').element
-			this.pcMoneyBox = new find('#pcMoney').element
-			this.plMoneyBox = new find('#plMoney').element
-			this.foldBtn = new find('#fold').element
-			this.betBtn = new find('#bet').element
-			this.checkBtn.addEventListener('click', function(){
-				if(self.finished){
+			this.data.htmlComponent.button.check.addEventListener('click', function(){
+				if(self.data.game.finished.condition){
 					self.resetGame()
-					self.finished = false
+					self.data.game.finished.condition = false
 					return
 				}
-				self.distributing<5?self.distributing++:null
+				self.data.distributing < 5 ? self.data.distributing ++ : null
 				self.loop()
 			})
 
-			this.foldBtn.addEventListener('click', function(){
-				self.fold.player = true
+			this.data.htmlComponent.button.fold.addEventListener('click', function(){
+				self.data.fold.player = true
 				self.loop()
+			})
+
+			this.data.htmlComponent.button.bet.addEventListener('click', function(){
+				/* doubling bet*/
+				self.data.bet.money *= 2 
+				self.data.bet.player = true
+				self.dealerGatheringBets()
+				self.showAlerts()
 			})
 		}
 
 		this.generate = function(){
 			var self = this; 
 			([1, 2]).forEach(function(){
-				self.player.cards.push(self.pick())
+				self.data.player.cards.push(self.pick())
 			});
 			([1, 2]).forEach(function(){
-				self.computer.cards.push(self.pick())
+				self.data.computer.cards.push(self.pick())
 			});
 			([1, 2, 3, 4, 5]).forEach(function(){
-				self.dealer.cards.push(self.pick())
+				self.data.dealer.cards.push(self.pick())
 			});
-			// this.player.cards = [this.pick(), this.pick()]
-			// this.computer.cards = [this.pick(), this.pick()]
-			// this.dealer.cards = [this.pick(), this.pick(), this.pick(), this.pick(), this.pick()]
 		}
 	 	
 		this.checking = function(cards){
@@ -782,74 +799,129 @@ body{
 					'background-position-y': 492 * (-1) + 'px'
 				})
 			})
-			this.fold.player = false
-			this.fold.computer = false
-			this.player.cards = []
-			this.computer.cards = []
-			this.dealer.cards = []
-			this.distributing = 1
-			this.deck = new Deck()
+			this.data.fold.player = false
+			this.data.fold.computer = false
+			this.data.game.finished.condition = false
+			this.data.game.finished.inFavorOf.player = false
+			this.data.game.finished.inFavorOf.computer = false
+			this.data.game.finished.inFavorOf.none = false
+			this.data.blind.player = false
+			this.data.bet.money = 10
+			this.data.dealer.money = 0 
+			this.data.blind.computer = false
+			this.data.player.cards = []
+			this.data.computer.cards = []
+			this.data.dealer.cards = []
+			this.data.distributing = 1
+			this.data.deck = new Deck()
+			this.data.htmlComponent.box.alert.innerHTML = null
 
 			/* start again*/
 			this.generate()
 			this.loop()
 		}
 
+		this.alertBoxFunc = function(html){
+			this.data.game.finished.condition ?
+				this.data.htmlComponent.box.alert.innerHTML = html
+				: null
+			return
+		}
+		this.showAlerts = function(){
+			this.data.htmlComponent.box.money.player.innerHTML = this.data.player.money
+			this.data.htmlComponent.box.money.computer.innerHTML = this.data.computer.money
+		}
+
+		this.makeProfit = function(){
+			if(this.data.game.finished.inFavorOf.none){
+				/* if drawn give half of them to both*/
+				this.data.player.money += this.data.dealer.money / 2
+				this.data.computer.money += this.data.dealer.money / 2
+				return
+			}
+			if(this.data.game.finished.inFavorOf.player && this.data.game.finished.condition){
+				this.data.player.money += this.data.dealer.money
+			}else if(this.data.game.finished.condition){
+				this.data.computer.money += this.data.dealer.money
+			}
+		}
+
+		this.dealerGatheringBets = function(){
+			/* Make firs bet, both pc and player */
+			if(!this.data.blind.player){
+				this.data.dealer.money += this.data.bet.money
+				this.data.player.money -= this.data.bet.money
+				this.data.blind.player = true
+
+			}
+			if(!this.data.blind.computer){
+				this.data.dealer.money += this.data.bet.money
+				this.data.computer.money -= this.data.bet.money
+				this.data.blind.computer = true
+			}
+			/* if someone rised or doubled a bet */
+			if(this.data.bet.player || this.data.bet.computer){
+				this.data.dealer.money += this.data.bet.money
+				this.data.computer.money -= this.data.bet.money
+				this.data.player.money -= this.data.bet.money
+				this.data.bet.player = false
+				this.data.bet.computer = false
+			}
+		}
 		/* check player Cards*/
 		this.loop = function(){
-			this.pcMoneyBox.innerHTML = this.computer.money
-			this.plMoneyBox.innerHTML = this.player.money
-
-
+			this.dealerGatheringBets()
+			this.showAlerts()
 
 
 			var cardsPL = new Array(), cardsPC = new Array(), concatPC = [], concatPL = []
-			cardsPL = this.player.cards
-			cardsPC = this.computer.cards
+			cardsPL = this.data.player.cards
+			cardsPC = this.data.computer.cards
 			// console.log(cardsPC)
 			this.drawCard(cardsPL, cardsPC, concatPL)
 
-			if(this.distributing == 2){
+			if(this.data.distributing == 2){
 				for(var index = 0; index <= 2; index ++){
 					/*distribute 3 cards*/
-					concatPL.push(this.dealer.cards[index]) 
-					concatPC.push(this.dealer.cards[index]) 
+					concatPL.push(this.data.dealer.cards[index]) 
+					concatPC.push(this.data.dealer.cards[index]) 
 
 				}
 				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
-			if(this.distributing == 3){
+			if(this.data.distributing == 3){
 				/*distribute 4 cards*/
 				for(var index = 0; index <= 3; index ++){
-					concatPL.push(this.dealer.cards[index]) 
-					concatPC.push(this.dealer.cards[index]) 
+					concatPL.push(this.data.dealer.cards[index]) 
+					concatPC.push(this.data.dealer.cards[index]) 
 				}
 				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
-			if(this.distributing == 4){
+			if(this.data.distributing == 4){
 				/*distribute 5 cards*/
 				for(var index = 0; index <= 4; index ++){
-					concatPL.push(this.dealer.cards[index]) 
-					concatPC.push(this.dealer.cards[index]) 
+					concatPL.push(this.data.dealer.cards[index]) 
+					concatPC.push(this.data.dealer.cards[index]) 
 				}
 				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
 
 			cardsPL = cardsPL.concat(concatPL)
 			cardsPC = cardsPC.concat(concatPC)
-			// var cardsPL = this.player.cards.concat(this.dealer.cards)
-			// var cardsPC = this.computer.cards.concat(this.dealer.cards)
 			
-			if(this.fold.player){
-				this.alertBox.innerHTML= "PC wins"
-				this.player.money -= 10
+			if(this.data.fold.player){
+				this.data.htmlComponent.box.alert.innerHTML= "PC wins"
+				// this.data.player.money -= 10
+				this.makeProfit()
+				this.showAlerts()
+
 				this.resetGame()
-				// return
+				return
 			}
 			
 
-			if(this.distributing == 4){
-				this.finished = true
+			if(this.data.distributing == 4){
+				this.data.game.finished.condition = true
 				/*player cards cheking*/
 				print("PLAYER cards",'rgba(255,0,0,0.6)', 20)
 				var PL = this.checking(cardsPL)
@@ -865,30 +937,39 @@ body{
 							its for only high card
 						*/
 						if(PL.cards.rank.id == PC.cards.rank.id){
-							print('DRAWN','blue', 56)
-							this.alertBox.innerHTML= "drawn"
+							print('DRAWN ,' +PL.name,'blue', 56)
+							this.alertBoxFunc("drawn, "+PL.name)
+							this.data.game.finished.inFavorOf.none = true
 						}else if(PL.cards.rank.id == 1){
 							print('Player Wins','green', 56)
-							this.alertBox.innerHTML= "player wins"
+							this.alertBoxFunc("player wins, "+PL.name)
+							this.data.game.finished.inFavorOf.player = true
 						}else if(PL.cards.rank.id > PC.cards.rank.id){
 							print('Player Wins','green', 56)
-							this.alertBox.innerHTML= "player wins"
+							this.alertBoxFunc("player wins, "+PL.name)
+							this.data.game.finished.inFavorOf.player = true
 						}else{
 							print('Computer Wins','red', 56)
-							this.alertBox.innerHTML= "PC wins"
+							this.alertBoxFunc("PC wins, "+PC.name)
+							this.data.game.finished.inFavorOf.computer = true
 						}
 					}else{
 						print('DRAWN','blue', 56)
-						this.alertBox.innerHTML= "Drawn"
+						this.data.game.finished.inFavorOf.none = true
+						this.alertBoxFunc("Drawn, "+PC.name)
 					}
 				}else if(PL.id < PC.id){
 					print('Computer Wins','red', 56)
-					this.alertBox.innerHTML= "PC wins"
+					this.alertBoxFunc("PC wins, "+PC.name)
+					this.data.game.finished.inFavorOf.computer = true
 				}else{
 					print('Player Wins','green', 56)
-					this.alertBox.innerHTML= "Player wins"
+					this.data.game.finished.inFavorOf.player = true
+					this.alertBoxFunc("Player wins, "+PL.name)
 				}
-			
+			this.makeProfit()
+			this.showAlerts()
+
 			}
 		}
 	}
