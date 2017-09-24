@@ -206,6 +206,27 @@ body{
 		}
 	}
 
+/*class find*/
+	function find(el = null){
+		this.element = (typeof el === 'object') ? el : document.querySelector(el)
+		if(this.element === null) return
+		this.style = this.element.getAttribute('style') || ''
+
+		this.css = function(styles){
+			if(typeof styles === 'object'){
+				for(var style in styles){
+					this.style += style + ':' + styles[style] + ';'
+				}
+				this.element.setAttribute('style', this.style)
+				return this
+			}else{
+				return
+			}
+		}
+	}
+	// window.find = function(e){
+	// 	return new find(e)
+	// }
 
 	function Is(){
 		return {
@@ -474,8 +495,24 @@ body{
 	function Game(){
 		/*Here are all cards from 1 to King (all suits) count = 52 from 0 to 51*/
 		this.distributing = 1
-		this.playerFold = false
-		this.pcFold = false
+		this.finished = false
+		this.fold = {
+			player: false,
+			computer: false
+		}
+
+		this.elements = {
+			pc1: '#pc1',
+			pc2: '#pc2',
+			pl1: '#pl1',
+			pl2: '#pl2',
+			dl1: '#dl1',
+			dl2: '#dl2',
+			dl3: '#dl3',
+			dl4: '#dl4',
+			dl5: '#dl5'
+		}
+
 		this.deck = new Deck()
 		this.player = {
 			cards: [],
@@ -494,45 +531,57 @@ body{
 		}
 
 		this.pick = function(){
-			/*working perfect*/
-			var remove = rand(0, this.deck.length - 1)
-			var card = this.deck[remove]
+			/* returning one card from deck and removing that card from array*/
+			var remove = rand(0, this.deck.length - 1), card = this.deck[remove]
 			this.deck.splice(remove, 1)
 			return card 
 		}
 
 
 		this.drawCard = function(pl, pc, dl){
-			print('dealer')
-			console.log(dl)
-			document.getElementById('pc1').style.backgroundPositionX = '-'+pc[0].pixel.x+'px'
-			document.getElementById('pc1').style.backgroundPositionY = '-'+pc[0].pixel.y+'px'
-			document.getElementById('pc2').style.backgroundPositionX = '-'+pc[1].pixel.x+'px'
-			document.getElementById('pc2').style.backgroundPositionY = '-'+pc[1].pixel.y+'px'
+			switch(dl.length){
+				case 3:
+					for(var index = 0; _dl = [this.elements.dl1, 
+												this.elements.dl2, 
+												this.elements.dl3], index < _dl.length; index ++){
+						new find(_dl[index]).css({
+							'background-position-x': dl[index].pixel.x * (-1) + 'px',
+							'background-position-y': dl[index].pixel.y * (-1) + 'px'
+						})
+					}
+					break
+				case 4: 
+					new find(this.elements.dl4).css({
+						'background-position-x': dl[3].pixel.x * (-1) + 'px',
+						'background-position-y': dl[3].pixel.y * (-1) + 'px'
+					})
+				break
+				case 5:
+					new find(this.elements.dl5).css({
+						'background-position-x': dl[4].pixel.x * (-1) + 'px',
+						'background-position-y': dl[4].pixel.y * (-1) + 'px'
+					})
+				break
+				default:
+					if(debugMode){
+						/* if debug mode show oponents cards else hide it*/
+						new find(this.elements.pc1).css({
+							'background-position-x': pc[0].pixel.x * (-1) + 'px',
+							'background-position-y': pc[0].pixel.y * (-1) + 'px'
+						})
+						new find(this.elements.pc2).css({
+							'background-position-x': pc[1].pixel.x * (-1) + 'px',
+							'background-position-y': pc[1].pixel.y * (-1) + 'px'
+						})
+					}
+					for(var index = 0; _pl = [this.elements.pl1, this.elements.pl2], index < _pl.length; index ++){
+						new find(_pl[index]).css({
+							'background-position-x': pl[index].pixel.x * (-1) + 'px',
+							'background-position-y': pl[index].pixel.y * (-1) + 'px'
+						})
+					}
 
-
-		if(dl.length==3){
-
-			document.getElementById('dl1').style.backgroundPositionX = '-'+dl[0].pixel.x+'px'
-			document.getElementById('dl1').style.backgroundPositionY = '-'+dl[0].pixel.y+'px'
-			document.getElementById('dl2').style.backgroundPositionX = '-'+dl[1].pixel.x+'px'
-			document.getElementById('dl2').style.backgroundPositionY = '-'+dl[1].pixel.y+'px'
-			document.getElementById('dl3').style.backgroundPositionX = '-'+dl[2].pixel.x+'px'
-			document.getElementById('dl3').style.backgroundPositionY = '-'+dl[2].pixel.y+'px'
-		}else if(dl.length==4){
-
-			document.getElementById('dl4').style.backgroundPositionX = '-'+dl[3].pixel.x+'px'
-			document.getElementById('dl4').style.backgroundPositionY = '-'+dl[3].pixel.y+'px'
-		}else if(dl.length==5){
-			document.getElementById('dl5').style.backgroundPositionX = '-'+dl[4].pixel.x+'px'
-			document.getElementById('dl5').style.backgroundPositionY = '-'+dl[4].pixel.y+'px'
-		}
-
-			document.getElementById('pl1').style.backgroundPositionX = '-'+pl[0].pixel.x+'px'
-			document.getElementById('pl1').style.backgroundPositionY = '-'+pl[0].pixel.y+'px'
-			document.getElementById('pl2').style.backgroundPositionX = '-'+pl[1].pixel.x+'px'
-			document.getElementById('pl2').style.backgroundPositionY = '-'+pl[1].pixel.y+'px'
-
+			}
 		}
 
 		this.init = function(){
@@ -543,19 +592,24 @@ body{
 
 		this.event = function(){
 			var self = this
-			this.checkBtn = document.getElementById('check')
-			this.alertBox = document.getElementById('alert')
-			this.pcMoneyBox = document.getElementById('pcMoney')
-			this.plMoneyBox = document.getElementById('plMoney')
-			this.foldBtn = document.getElementById('fold')
-			this.betBtn = document.getElementById('bet')
+			this.checkBtn = new find('#check').element
+			this.alertBox = new find('#alert').element
+			this.pcMoneyBox = new find('#pcMoney').element
+			this.plMoneyBox = new find('#plMoney').element
+			this.foldBtn = new find('#fold').element
+			this.betBtn = new find('#bet').element
 			this.checkBtn.addEventListener('click', function(){
+				if(self.finished){
+					self.resetGame()
+					self.finished = false
+					return
+				}
 				self.distributing<5?self.distributing++:null
 				self.loop()
 			})
 
 			this.foldBtn.addEventListener('click', function(){
-				self.playerFold = true
+				self.fold.player = true
 				self.loop()
 			})
 		}
@@ -720,6 +774,27 @@ body{
 			}
 		}
 
+		this.resetGame = function(){
+			/* reset all data except money*/
+			document.querySelectorAll('.cards').forEach(function(e){
+				new find(e).css({
+					'background-position-x': 158 * (-1) + 'px',
+					'background-position-y': 492 * (-1) + 'px'
+				})
+			})
+			this.fold.player = false
+			this.fold.computer = false
+			this.player.cards = []
+			this.computer.cards = []
+			this.dealer.cards = []
+			this.distributing = 1
+			this.deck = new Deck()
+
+			/* start again*/
+			this.generate()
+			this.loop()
+		}
+
 		/* check player Cards*/
 		this.loop = function(){
 			this.pcMoneyBox.innerHTML = this.computer.money
@@ -765,43 +840,56 @@ body{
 			// var cardsPL = this.player.cards.concat(this.dealer.cards)
 			// var cardsPC = this.computer.cards.concat(this.dealer.cards)
 			
-			/*player cards cheking*/
-			print("PLAYER cards",'rgba(255,0,0,0.6)', 20)
-			var PL = this.checking(cardsPL)
-			print('----------------------------------------------------------------','yellow', 24)
-			/*computer cards checking*/
-			print("COMPUTER cards",'rgba(0,255,0,0.6)', 20)
-			var PC = this.checking(cardsPC)
-
-			if(this.playerFold){
+			if(this.fold.player){
 				this.alertBox.innerHTML= "PC wins"
 				this.player.money -= 10
-				return
-			}
-			if(PL.id == PC.id){
-				if(typeof PL.cards.rank === 'object'){ 
-					/*
-						if there is only one object and not an Array
-						its for only high card
-					*/
-					if(PL.cards.rank.id == PC.cards.rank.id){
-						print('DRAWN','blue', 56)
-					}else if(PL.cards.rank.id == 1){
-						print('Player Wins','green', 56)
-					}else if(PL.cards.rank.id > PC.cards.rank.id){
-						print('Player Wins','green', 56)
-					}else{
-						print('Computer Wins','red', 56)
-					}
-				}else{
-					print('DRAWN','blue', 56)
-				}
-			}else if(PL.id < PC.id){
-				print('Computer Wins','red', 56)
-			}else{
-				print('Player Wins','green', 56)
+				this.resetGame()
+				// return
 			}
 			
+
+			if(this.distributing == 4){
+				this.finished = true
+				/*player cards cheking*/
+				print("PLAYER cards",'rgba(255,0,0,0.6)', 20)
+				var PL = this.checking(cardsPL)
+				print('----------------------------------------------------------------','yellow', 24)
+				/*computer cards checking*/
+				print("COMPUTER cards",'rgba(0,255,0,0.6)', 20)
+				var PC = this.checking(cardsPC)
+
+				if(PL.id == PC.id){
+					if(typeof PL.cards.rank === 'object'){
+						/*
+							if there is only one object and not an Array
+							its for only high card
+						*/
+						if(PL.cards.rank.id == PC.cards.rank.id){
+							print('DRAWN','blue', 56)
+							this.alertBox.innerHTML= "drawn"
+						}else if(PL.cards.rank.id == 1){
+							print('Player Wins','green', 56)
+							this.alertBox.innerHTML= "player wins"
+						}else if(PL.cards.rank.id > PC.cards.rank.id){
+							print('Player Wins','green', 56)
+							this.alertBox.innerHTML= "player wins"
+						}else{
+							print('Computer Wins','red', 56)
+							this.alertBox.innerHTML= "PC wins"
+						}
+					}else{
+						print('DRAWN','blue', 56)
+						this.alertBox.innerHTML= "Drawn"
+					}
+				}else if(PL.id < PC.id){
+					print('Computer Wins','red', 56)
+					this.alertBox.innerHTML= "PC wins"
+				}else{
+					print('Player Wins','green', 56)
+					this.alertBox.innerHTML= "Player wins"
+				}
+			
+			}
 		}
 	}
 	
