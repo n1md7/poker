@@ -219,9 +219,9 @@
 	function find(el = null){
 		this.element = (typeof el === 'object') ? el : document.querySelector(el)
 		if(this.element === null) return
-		this.style = /*this.element.getAttribute('style') ||*/ ''
 
-		this.css = function(styles){
+		this.css = function(styles, add = false){
+			this.style = add ? this.element.getAttribute('style') : ''
 			if(typeof styles === 'object'){
 				for(var style in styles){
 					this.style += style + ':' + styles[style] + ';'
@@ -505,7 +505,8 @@
 						player: false,
 						computer: false,
 						none: false
-					}
+					},
+					combination: null
 				}
 			},
 			fold: {
@@ -554,7 +555,7 @@
 				}
 			}
 		}
-		console.log(this.data)
+		// console.log(this.data)
 		
 		var rand = function(min, max) {
 	    	return Math.floor(Math.random() * (max - min + 1) + min)
@@ -858,11 +859,15 @@
 				/* if drawn give half of them to both*/
 				this.data.player.money += this.data.dealer.money / 2
 				this.data.computer.money += this.data.dealer.money / 2
+				this.alertBoxFunc("Drawn, " + this.data.game.finished.combination)
+
 				return
 			}
 			if(this.data.game.finished.inFavorOf.player && this.data.game.finished.condition){
+				this.alertBoxFunc("Player won with combination , " + this.data.game.finished.combination)
 				this.data.player.money += this.data.dealer.money
 			}else if(this.data.game.finished.condition){
+				this.alertBoxFunc("Computer won with combination , " + this.data.game.finished.combination)
 				this.data.computer.money += this.data.dealer.money
 			}
 		}
@@ -894,6 +899,42 @@
 				this.data.bet.computer = false
 			}
 		}
+
+		this.highlightCards = function(notSortedcards, valueCards){
+			if(this.data.game.finished.inFavorOf.none) return
+				/* this <if>  needs testing maybe its not necessary */
+			if(typeof valueCards.rank !== 'undefined'){
+				valueCards = [valueCards]
+			}
+			var inElements = new Array()
+			var inDealer = [
+				this.data.htmlComponent.elements.dl1,
+				this.data.htmlComponent.elements.dl2,
+				this.data.htmlComponent.elements.dl3,
+				this.data.htmlComponent.elements.dl4,
+				this.data.htmlComponent.elements.dl5
+			]
+			var	inPlayer = [this.data.htmlComponent.elements.pl1, this.data.htmlComponent.elements.pl2]
+			var	inComputer = [this.data.htmlComponent.elements.pc1, this.data.htmlComponent.elements.pc2]
+			if(this.data.game.finished.inFavorOf.player){
+				inElements = inPlayer.concat(inDealer)
+				notSortedcards = notSortedcards.player
+			}else{
+				inElements = inComputer.concat(inDealer)
+				notSortedcards = notSortedcards.computer
+			}
+			notSortedcards.forEach(function(not, index){
+				valueCards.forEach(function(card){
+					if(not.rank.id == card.rank.id){
+						new find(inElements[index]).css({
+							'box-shadow':' 0px 15px 20px rgba(255,0,0,0.7)'
+						}, true)
+					}
+				})
+			})
+
+		}
+
 		/* check player Cards*/
 		this.loop = function(){
 			this.dealerGatheringBets()
@@ -934,12 +975,17 @@
 
 			cardsPL = cardsPL.concat(concatPL)
 			cardsPC = cardsPC.concat(concatPC)
+			var notSortedCards = {
+				player: this.data.player.cards.concat(concatPL),
+				computer: this.data.computer.cards.concat(concatPL)
+			}
 			
 			if(this.data.fold.player){
-				this.data.htmlComponent.box.alert.innerHTML= "PC wins"
+				// this.data.htmlComponent.box.alert.innerHTML= "PC wins"
 				// this.data.player.money -= 10
 				this.data.game.finished.inFavorOf.computer = true
 				this.data.game.finished.condition = true
+
 				this.makeProfit()
 				this.showAlerts()
 
@@ -966,41 +1012,77 @@
 						*/
 						if(PL.cards.rank.id == PC.cards.rank.id){
 							print('DRAWN ,' +PL.name,'blue', 56)
-							this.alertBoxFunc("drawn, "+PL.name)
 							this.data.game.finished.inFavorOf.none = true
+							this.data.game.finished.combination = PL.name
 						}else if(PL.cards.rank.id == 1){
 							print('Player Wins','green', 56)
-							this.alertBoxFunc("player wins, "+PL.name)
 							this.data.game.finished.inFavorOf.player = true
+							this.data.game.finished.combination = PL.name
+
 						}else if(PL.cards.rank.id > PC.cards.rank.id){
 							print('Player Wins','green', 56)
-							this.alertBoxFunc("player wins, "+PL.name)
+							this.data.game.finished.combination = PL.name
 							this.data.game.finished.inFavorOf.player = true
 						}else{
 							print('Computer Wins','red', 56)
-							this.alertBoxFunc("PC wins, "+PC.name)
+							this.data.game.finished.combination = PC.name
 							this.data.game.finished.inFavorOf.computer = true
 						}
 					}else{
 						print('DRAWN','blue', 56)
 						this.data.game.finished.inFavorOf.none = true
-						this.alertBoxFunc("Drawn, "+PC.name)
+						this.data.game.finished.combination = PC.name
 					}
 				}else if(PL.id < PC.id){
 					print('Computer Wins','red', 56)
-					this.alertBoxFunc("PC wins, "+PC.name)
+					this.data.game.finished.combination = PC.name
 					this.data.game.finished.inFavorOf.computer = true
 				}else{
 					print('Player Wins','green', 56)
 					this.data.game.finished.inFavorOf.player = true
-					this.alertBoxFunc("Player wins, "+PL.name)
+					this.data.game.finished.combination = PL.name
 				}
 				this.data.htmlComponent.button.check.value = 'start'
 				this.data.htmlComponent.button.fold.setAttribute('disabled','')
 				this.data.htmlComponent.button.bet.setAttribute('disabled','')
 			this.makeProfit()
 			this.showAlerts()
+			console.log('%c before pass Player cards','color:rgba(255,0,0,0.4)')
+			console.log(PL.cards)
+			console.log('%c before pass Computer cards','color:rgba(255,0,0,0.4)')
+			console.log(PC.cards)
 
+			var pcArray = new Array()
+			var _isArray = false
+			if(PC.cards[0] instanceof Array){
+				_isArray = true
+				PC.cards.forEach(function(e){
+					console.log(e)
+					pcArray = pcArray.concat(e)
+				})
+			}
+
+			var plArray = new Array()
+			var _isArrayPl = false
+			if(PL.cards[0] instanceof Array){
+				_isArrayPl = true
+				PL.cards.forEach(function(e){
+					console.log(e)
+					plArray = plArray.concat(e)
+				})
+			}
+			console.log(plArray)
+			/* ყოველთვის ერთIმასივი უნდა დააბურუნოს ვალიდაიაში გაასაწორებეია ს ეს რრაც უკეტეესად უნდა გავაკეთო*/
+			this.highlightCards(notSortedCards, (this.data.game.finished.inFavorOf.none 
+				? null :
+				(this.data.game.finished.inFavorOf.player 
+					? (_isArrayPl)
+							? plArray :
+								PL.cards :
+						(_isArray)
+							? pcArray :
+								PC.cards
+				)))
 			}
 		}
 	}
