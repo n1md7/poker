@@ -8,17 +8,12 @@
   <!-- <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1" media="(device-height: 568px)"> -->
 </head>
 <style type="text/css">
-	#dlMoney{
-		position: absolute;
-		top: 0;
-		bottom: 0;
-		right: 0;
-		height: 40px;
-		width: 100px;
-		margin:auto;
-	}
+	
 	body{
 		background-color: #938874;
+		user-select: none;
+		-moz-user-select: none;
+		-webkit-user-select: none;
 	}
 	.cards{
 		width: 79px;
@@ -85,33 +80,76 @@
 	}
 	.controlls{
 		position: absolute;
-		width: 170px;
+		width: 240px;
 		bottom: 0;
+		height: 50px;
+		padding: 0;
 		left: 0;
 		right: 0;
 		margin: auto;
 		/*border: solid;*/
-		height: 70px;
+		overflow: auto;
+		/*box-sizing: border-box;*/
+		height: 80px;
+	}
+	.controlls > div{
+		/*border: solid 1px red;*/
+		box-sizing: border-box;
+		width: 33.3%;
+		height: 100%;
+		line-height: 80px;
+		background-image: url('assets/coin.png');
+		background-size: cover;
+		border-radius: 40px;
+		float: left;
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-size: 14px;
+	}
+	.controlls > div:hover{
+		cursor: pointer;
+		box-shadow: 1px 1px 10px rgba(255,0,0,1);
 	}
 	#pcMoney{
 		position: absolute;
-		top: 0;right: 0;
+		top: 100px;right: 200px;
 	}
 	#plMoney{
 		position: absolute;
-		right: 0;bottom: 0;
+		right: 200px;bottom: 100px;
+	}
+	#dlMoney{
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 140px;
+		height: auto;
+		min-height: 10px;
+		max-height: 30px;
+		margin:auto;
+	}
+	#pcMoney,#plMoney,#dlMoney{
+		padding: 5px 10px;
+		font-size: 30px;
+		font-weight: bold;
+		color: rgba(255,255,255,0.8);
+		background-color: rgba(0,0,0,0.1);
+	}
+	#alert{
+		text-align: center;
+		font-weight: bold;
+		color: rgba(55,0,255,0.8);
 	}
 </style>
 <body>
 <h1 id="alert"></h1>
-<h3 id="pcMoney"></h3>
-<h3 id="plMoney"></h3>
-<h3 id="dlMoney"></h3>
 <div class="container">
 	<div class="pc">
 		<div class="cards" id="pc1"></div>
 		<div class="cards" id="pc2"></div>
 	</div>
+		<div id="pcMoney"></div>
 	<div class="dl">
 		<div class="cards" id="dl1"></div>
 		<div class="cards" id="dl2"></div>
@@ -119,22 +157,27 @@
 		<div class="cards" id="dl4"></div>
 		<div class="cards" id="dl5"></div>
 	</div>
+	<div id="dlMoney"></div>
 	<div class="pl">
 		<div class="cards" id="pl1"></div>
 		<div class="cards" id="pl2"></div>
 	</div>
+	<div id="plMoney"></div>
 </div>
 <div class="controlls">
-	<input type="button" id="check" value="Check">
-	<input type="button" id="fold" value="Fold">
-	<input type="button" id="bet" value="Bet 2x">
+	<div id="check">CHECK</div>
+	<div id="fold">FOLD</div>
+	<div id="bet">BET 2X</div>
+	<!-- <input type="button" id="check" value="Check"> -->
+	<!-- <input type="button" id="fold" value="Fold"> -->
+	<!-- <input type="button" id="bet" value="Bet 2x"> -->
 	<!-- <input type="range" id="range" min="1" max="100" defaultValue="1"> -->
 </div>
 
 <script type="text/javascript">
 
 (function(window, document){
-	var debugMode = true
+	var debugMode = !true
 	var print = function(text, color='black', fontSize = 10){
 		debugMode?console.log('%c'+text, 'color:'+color+';font-size:'+fontSize+'px;'):null
 	}
@@ -487,11 +530,12 @@
 			deck: new Deck(),
 			player: {
 				cards: new Array(),
-				money: 100000
+				money: 3500
 			},
 			computer: {
 				cards: new Array(),
-				money: 100000
+				money: 4050,
+				show : false
 			},
 			dealer: {
 				cards: new Array(),
@@ -516,7 +560,7 @@
 			bet: {
 				player: false,
 				computer: false,
-				money: 10
+				money: 50
 			},
 			blind: {
 				player: false,
@@ -595,7 +639,7 @@
 					})
 				break
 				default:
-					if(debugMode){
+					if(debugMode || this.data.computer.show){
 						/* if debug mode show oponents cards else hide it*/
 						new find(this.data.htmlComponent.elements.pc1).css({
 							'background-position-x': pc[0].pixel.x * (-1) + 'px',
@@ -632,6 +676,7 @@
 
 					return
 				}
+				
 				self.data.distributing < 5 ? self.data.distributing ++ : null
 				self.loop()
 			})
@@ -832,7 +877,7 @@
 			this.data.deck = new Deck()
 			this.data.htmlComponent.box.alert.innerHTML = null
 			this.data.htmlComponent.button.bet.removeAttribute('disabled')
-			this.data.htmlComponent.button.check.value = 'check'
+			this.data.htmlComponent.button.check.innerHTML = 'check'
 			this.data.htmlComponent.button.fold.removeAttribute('disabled')
 			this.data.htmlComponent.button.bet.removeAttribute('disabled')
 
@@ -848,10 +893,20 @@
 				: null
 			return
 		}
+
+		this.addSapces = function(num){
+			num += ''
+			var a = num.split('').reverse() // 4 5 6 7 8
+			for(var i = a.length - 1; i > 0 ; i --){
+				i % 3 == 0 ? a.splice(i, 0, ' ') : null 
+			}
+			return a.reverse().join('')
+		}
+
 		this.showAlerts = function(){
-			this.data.htmlComponent.box.money.player.innerHTML = this.data.player.money
-			this.data.htmlComponent.box.money.computer.innerHTML = this.data.computer.money
-			this.data.htmlComponent.box.money.dealer.innerHTML = this.data.dealer.money
+			this.data.htmlComponent.box.money.player.innerHTML = '$ ' + this.addSapces(this.data.player.money)
+			this.data.htmlComponent.box.money.computer.innerHTML = '$ ' + this.addSapces(this.data.computer.money)
+			this.data.htmlComponent.box.money.dealer.innerHTML = '$ ' + this.addSapces(this.data.dealer.money)
 		}
 
 		this.makeProfit = function(){
@@ -864,10 +919,10 @@
 				return
 			}
 			if(this.data.game.finished.inFavorOf.player && this.data.game.finished.condition){
-				this.alertBoxFunc("Player won with combination , " + this.data.game.finished.combination)
+				this.alertBoxFunc("YOU WON!"/* + this.data.game.finished.combination*/)
 				this.data.player.money += this.data.dealer.money
 			}else if(this.data.game.finished.condition){
-				this.alertBoxFunc("Computer won with combination , " + this.data.game.finished.combination)
+				this.alertBoxFunc("COMPUTER WON!"/* + this.data.game.finished.combination*/)
 				this.data.computer.money += this.data.dealer.money
 			}
 		}
@@ -962,6 +1017,8 @@
 					concatPL.push(this.data.dealer.cards[index]) 
 					concatPC.push(this.data.dealer.cards[index]) 
 				}
+				this.data.computer.show = true
+
 				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
 			if(this.data.distributing == 4){
@@ -970,6 +1027,9 @@
 					concatPL.push(this.data.dealer.cards[index]) 
 					concatPC.push(this.data.dealer.cards[index]) 
 				}
+				/* fi last distributing show  pc cards*/
+				this.data.computer.show = false
+
 				this.drawCard(cardsPL, cardsPC, concatPL)
 			}
 
@@ -1005,44 +1065,198 @@
 				var PC = this.checking(cardsPC)
 
 				if(PL.id == PC.id){
-					if(typeof PL.cards.rank === 'object'){
-						/*
-							if there is only one object and not an Array
-							its for only high card
-						*/
-						if(PL.cards.rank.id == PC.cards.rank.id){
-							print('DRAWN ,' +PL.name,'blue', 56)
-							this.data.game.finished.inFavorOf.none = true
-							this.data.game.finished.combination = PL.name
-						}else if(PL.cards.rank.id == 1){
-							print('Player Wins','green', 56)
-							this.data.game.finished.inFavorOf.player = true
-							this.data.game.finished.combination = PL.name
+					/*
+						both have same ranking cards
+					*/
+					// if(PL.cards instanceof Array){
+						// alert(PL.cards.length)
+						switch(PL.id){
+							case 1: 
+							print('case 1: ','blue', 56)
+							/* high card*/
+								var playerCount = 0
+								var self = this
+								this.data.player.cards.forEach(function(__player__){
+									var playerInnerCounter = 0
+									self.data.computer.cards.forEach(function(__computer__){
+										if(__player__.rank.id > __computer__.rank.id ||
+											(__player__.rank.id == 1 && __computer__.rank.id != 1)){
+											playerInnerCounter ++
+										}
+									})
+									playerInnerCounter == 2 ? playerCount ++: null
+									playerInnerCounter = 0  
+								})
+								playerCount >= 1 ? 
+									/* player has higher cards*/
+									this.data.game.finished.inFavorOf.player = true
+									: 
+									this.data.game.finished.inFavorOf.computer = true
 
-						}else if(PL.cards.rank.id > PC.cards.rank.id){
-							print('Player Wins','green', 56)
-							this.data.game.finished.combination = PL.name
-							this.data.game.finished.inFavorOf.player = true
-						}else{
-							print('Computer Wins','red', 56)
-							this.data.game.finished.combination = PC.name
-							this.data.game.finished.inFavorOf.computer = true
+								print(this.data.game.finished.inFavorOf.computer+' '+
+										this.data.game.finished.inFavorOf.player+' '+
+										this.data.game.finished.inFavorOf.none)
+								this.data.game.finished.combination = 'High CARD'
+
+								break
+							case 2: 
+							print('case 2: ','blue', 56)
+							/* es kargia mgonia marto unda shevcvalo sworad gamoachinos kartebi ganateba*/
+							/* pair card*/
+								if(this.data.computer.cards[0].rank.id == this.data.computer.cards[1].rank.id &&
+									this.data.player.cards[0].rank.id == this.data.player.cards[1].rank.id){
+									if(this.data.computer.cards[0].rank.id < this.data.player.cards[0].rank.id){
+										this.data.game.finished.inFavorOf.player = true
+									}else if(this.data.computer.cards[0].rank.id == this.data.player.cards[0].rank.id){
+										this.data.game.finished.inFavorOf.computer = true
+									}else{
+										this.data.game.finished.inFavorOf.none = true
+									}
+								}else if(this.data.computer.cards[0].rank.id == this.data.computer.cards[1].rank.id &&
+									this.data.player.cards[0].rank.id != this.data.player.cards[1].rank.id){
+									/*
+										player counts form dealer card so pc is winner
+									*/
+									this.data.game.finished.inFavorOf.computer = true
+								}else if(this.data.computer.cards[0].rank.id != this.data.computer.cards[1].rank.id &&
+									this.data.player.cards[0].rank.id == this.data.player.cards[1].rank.id){
+									/* pc counts from dealers cards so player is winner*/
+									this.data.game.finished.inFavorOf.player = true
+								}else{
+									/* both counts from dealers cards so nono of them is winner, Drawn game*/
+									var playerCount = 0
+									var self = this
+									this.data.player.cards.forEach(function(__player__){
+										var playerInnerCounter = 0
+										self.data.computer.cards.forEach(function(__computer__){
+											if(__player__.rank.id > __computer__.rank.id ||
+												(__player__.rank.id == 1 && __computer__.rank.id != 1)){
+												playerInnerCounter ++
+											}
+										})
+										playerInnerCounter == 2 ? playerCount ++: null
+										playerInnerCounter = 0  
+									})
+									/* player has higher cards*/
+									playerCount >= 1 ? 
+										(this.data.game.finished.inFavorOf.player = true)
+										: 
+										(this.data.game.finished.inFavorOf.computer = true)
+								}
+									print(this.data.game.finished.inFavorOf.computer+' '+
+										this.data.game.finished.inFavorOf.player+' '+
+										this.data.game.finished.inFavorOf.none)
+									this.data.game.finished.combination = 'TWO Pair'
+
+								break
+							case 3: 
+							/* two or multiple pair*/
+							print('case 3: ეს არ მაქ დაწერილი','blue', 56)
+							/* ეს არ მაქ დაწერილი მაგარი ტვინის ტყვნაა :(*/
+							break
+							case 4: 
+							/* three of a kind*/
+							print('case 4: ','blue', 56)
+							break
+							case 5:
+							/* straight*/
+							/*
+									 2 4
+									 3 4 5 6 7
+									 9 10
+									 ამ შემთხვევაში არ იმუშავებს მგონი
+									 პირიქიტ მოაგებინებს  მაგრამე გ ძალიან იშვიათად მოხდება
+									 და ერთი მაგისიც :D
+							*/
+							print('case 5: ','blue', 56)
+								var playerCount = 0
+								var self = this
+								this.data.player.cards.forEach(function(__player__){
+									var playerInnerCounter = 0
+									self.data.computer.cards.forEach(function(__computer__){
+										if(__player__.rank.id > __computer__.rank.id ||
+											(__player__.rank.id == 1 && __computer__.rank.id != 1)){
+											playerInnerCounter ++
+										}
+									})
+									playerInnerCounter == 2 ? playerCount ++: null
+									playerInnerCounter = 0  
+								})
+								playerCount >= 1 ? 
+									/* player has higher cards*/
+									this.data.game.finished.inFavorOf.player = true
+									: 
+									this.data.game.finished.inFavorOf.computer = true
+
+								print(this.data.game.finished.inFavorOf.computer+' '+
+										this.data.game.finished.inFavorOf.player+' '+
+										this.data.game.finished.inFavorOf.none)
+
+							// break
+							/*
+								აქ ბრეიკი აკლია რადგან ორივეზე ერთანირად წავა დათვლა
+							*/
+							case 6:
+								print('case 6: ','blue', 56)
+								
+							// break
+							case 7: 
+								print('case 7: ','blue', 56)
+							// break
+							case 8:
+								print('case 8: ','blue', 56)
+							 // break
+							case 9: 
+								print('case 9: ','blue', 56)
+								var playerCount = 0
+								var self = this
+								this.data.player.cards.forEach(function(__player__){
+									var playerInnerCounter = 0
+									self.data.computer.cards.forEach(function(__computer__){
+										if(__player__.rank.id > __computer__.rank.id ||
+											(__player__.rank.id == 1 && __computer__.rank.id != 1)){
+											playerInnerCounter ++
+										}
+									})
+									playerInnerCounter == 2 ? playerCount ++: null
+									playerInnerCounter = 0  
+								})
+								playerCount >= 1 ? 
+									/* player has higher cards*/
+									this.data.game.finished.inFavorOf.player = true
+									: 
+									this.data.game.finished.inFavorOf.computer = true
+
+								print(this.data.game.finished.inFavorOf.computer+' '+
+										this.data.game.finished.inFavorOf.player+' '+
+										this.data.game.finished.inFavorOf.none)
+							break
 						}
-					}else{
-						print('DRAWN','blue', 56)
-						this.data.game.finished.inFavorOf.none = true
-						this.data.game.finished.combination = PC.name
-					}
+						console.log(PL.cards)
+						/*PL.cards.forEach(function(PLcard, PLindex){
+							PC.cards.forEach(function(PCcard, PCindex){
+
+							})
+						})*/
+					// }else{
+						
+					// }
+					this.data.game.finished.combination = PC.name
+				
 				}else if(PL.id < PC.id){
 					print('Computer Wins','red', 56)
 					this.data.game.finished.combination = PC.name
 					this.data.game.finished.inFavorOf.computer = true
-				}else{
+				}else if(PL.id > PC.id){
 					print('Player Wins','green', 56)
 					this.data.game.finished.inFavorOf.player = true
 					this.data.game.finished.combination = PL.name
+				}else{
+					print('Drown ','green', 56)
+					this.data.game.finished.inFavorOf.none = true
+					this.data.game.finished.combination = PL.name
 				}
-				this.data.htmlComponent.button.check.value = 'start'
+				this.data.htmlComponent.button.check.innerHTML = 'START'
 				this.data.htmlComponent.button.fold.setAttribute('disabled','')
 				this.data.htmlComponent.button.bet.setAttribute('disabled','')
 			this.makeProfit()
@@ -1073,6 +1287,10 @@
 			}
 			console.log(plArray)
 			/* ყოველთვის ერთIმასივი უნდა დააბურუნოს ვალიდაიაში გაასაწორებეია ს ეს რრაც უკეტეესად უნდა გავაკეთო*/
+			/* es funqciad unda vaqcio da roca sachiroa mashin gamovichino
+			zogiert ifshia raa sachiro anu dileris kartebs achvenebs rodesac orivestvis asertoa da
+			unda gaaferados marto maRali karti an cvladi unda shevqmna romelic tru da flase iqneba 
+			da tu falsi amashin ar qnas da meore funqcia gmaoyneos */
 			this.highlightCards(notSortedCards, (this.data.game.finished.inFavorOf.none 
 				? null :
 				(this.data.game.finished.inFavorOf.player 
