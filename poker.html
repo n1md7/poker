@@ -815,7 +815,7 @@
 				})
 				return {
 					id: 3,
-					name : 'two pairs',
+					name : 'two pair',
 					cards : istwoPairs.cards
 				}
 			}
@@ -919,10 +919,10 @@
 				return
 			}
 			if(this.data.game.finished.inFavorOf.player && this.data.game.finished.condition){
-				this.alertBoxFunc("YOU WON!"/* + this.data.game.finished.combination*/)
+				this.alertBoxFunc("YOU WON! " + this.data.game.finished.combination.italics().toLocaleUpperCase())
 				this.data.player.money += this.data.dealer.money
 			}else if(this.data.game.finished.condition){
-				this.alertBoxFunc("COMPUTER WON!"/* + this.data.game.finished.combination*/)
+				this.alertBoxFunc("COMPUTER WON! " + this.data.game.finished.combination.italics().toLocaleUpperCase())
 				this.data.computer.money += this.data.dealer.money
 			}
 		}
