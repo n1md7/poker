@@ -1,0 +1,139 @@
+body{
+		background-color: #938874;
+		user-select: none;
+		-moz-user-select: none;
+		-webkit-user-select: none;
+	}
+	.cards{
+		width: 79px;
+		height: 123px;
+		position: relative;
+		margin:10px;
+		/*border: solid 1px;*/
+		float: left;
+		background-image: url('deck.png');
+		background-repeat: no-repeat;
+		background-position-x: -158px;
+		background-position-y: -492px;
+		border-radius: 7px;
+	}
+	.pc{
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		width: 205px;
+		/*border: solid red;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	.pl{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		width: 205px;
+		/*border: solid blue;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	.dl{
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		top: 0;
+		right: 0;
+		width: 506px;
+		/*border: solid yellow;*/
+		margin: auto;
+		height: 33.3%;
+	}
+	#pl1{
+
+	}
+	.container{
+		position: absolute;
+		top:0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		width: 1000px;
+		height: 500px;
+		background-image: url('table.jpg');
+		background-repeat: no-repeat;
+		background-size:contain;
+		background-position-x: center;
+		/*box-shadow: 1px 1px 20px red;*/
+		/*border: solid rgba(255,255,0,0.4);*/
+		margin:auto;
+
+	}
+	.controlls{
+		position: absolute;
+		width: 240px;
+		bottom: 0;
+		height: 50px;
+		padding: 0;
+		left: 0;
+		right: 0;
+		margin: auto;
+		/*border: solid;*/
+		overflow: auto;
+		/*box-sizing: border-box;*/
+		height: 80px;
+	}
+	.controlls > div{
+		/*border: solid 1px red;*/
+		box-sizing: border-box;
+		width: 33.3%;
+		height: 100%;
+		line-height: 80px;
+		background-image: url('coin.png');
+		background-size: cover;
+		border-radius: 40px;
+		float: left;
+		text-align: center;
+		vertical-align: middle;
+		font-weight: bold;
+		font-size: 14px;
+	}
+	.controlls > div:hover{
+		cursor: pointer;
+		box-shadow: 1px 1px 10px rgba(255,0,0,1);
+	}
+	#pcMoney{
+		position: absolute;
+		top: 100px;right: 200px;
+	}
+	#plMoney{
+		position: absolute;
+		right: 200px;bottom: 100px;
+	}
+	#dlMoney{
+		position: absolute;
+		top: 0;
+		bottom: 0;
+		right: 140px;
+		height: auto;
+		min-height: 10px;
+		max-height: 30px;
+		margin:auto;
+	}
+	#pcMoney,#plMoney,#dlMoney{
+		padding: 5px 10px;
+		font-size: 30px;
+		font-weight: bold;
+		color: rgba(255,255,255,0.8);
+		background-color: rgba(0,0,0,0.1);
+	}
+	#alert{
+		text-align: center;
+		font-weight: bold;
+		color: rgba(55,0,255,0.8);
+	}
+	div[disabled]{
+		opacity: 0.5;
+	}
+	div[disabled]:hover{
+		box-shadow: none;
+	}
